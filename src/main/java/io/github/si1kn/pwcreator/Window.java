@@ -1,8 +1,14 @@
 package io.github.si1kn.pwcreator;
 
 import javax.swing.*;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,13 +26,17 @@ public class Window extends JFrame {
         this.setPreferredSize(new Dimension(944, 574));
 
         //construct preComponents
-        final String[] jcomp3Items = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
+        final List<String> toBeConvertedLater = new ArrayList<>();
+
+        for (int i = 1; i < 41; i++) {
+            toBeConvertedLater.add(i + "");
+        }
 
         //construct components
         final JButton createpassword = new JButton("Create password");
         final JLabel jcomp4 = new JLabel(" Pick number for password size:");
 
-        this.jcomp3 = new JComboBox<>(jcomp3Items);
+        this.jcomp3 = new JComboBox<>(toBeConvertedLater.toArray());
         this.createdPasswordHere = new JTextArea(5, 5);
         this.numbers = new JCheckBox("Do you want numbers in password?");
         this.captial = new JCheckBox("Do you want Captial letters in your password?");
@@ -52,6 +62,13 @@ public class Window extends JFrame {
 
     public static void main(String[] args) {
         final JFrame frame = new Window("Password Generator");
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -60,25 +77,22 @@ public class Window extends JFrame {
 
     private String createPassword(boolean capitals, boolean numbers, int length) {
         final StringBuilder builder = new StringBuilder();
+        final Random r = new Random();
 
-        final Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            char c = (char) (r.nextInt(26) + 'a');
 
-        for (int i = 1; i < length; i++) {
-            final char randomChar = (char) (random.nextInt(26) + 'a');
+            if (ThreadLocalRandom.current().nextBoolean() && ThreadLocalRandom.current().nextBoolean() && numbers)
+                builder.append(ThreadLocalRandom.current().nextInt(1, 8 + 1));
+            else
+                builder.append(ThreadLocalRandom.current().nextBoolean() && ThreadLocalRandom.current().nextBoolean() && capitals ? String.valueOf(c).toUpperCase(Locale.ROOT) : c);
 
-            final String randomString = ThreadLocalRandom.current().nextBoolean() && ThreadLocalRandom.current().nextBoolean() && numbers ? "" + ThreadLocalRandom.current().nextInt(0, 10 + 1) : "";
-
-            if (ThreadLocalRandom.current().nextBoolean() && ThreadLocalRandom.current().nextBoolean() && capitals) {
-                builder.append(String.valueOf(randomChar).toUpperCase(Locale.ROOT)).append(randomString);
-            } else {
-                builder.append(randomChar).append(randomString.trim());
-            }
         }
 
         return builder.toString();
     }
 
     private void actionPerformed(ActionEvent event) {
-        this.createdPasswordHere.setText(this.createPassword(this.captial.isSelected(), this.numbers.isSelected(), this.jcomp3.getSelectedIndex()));
+        this.createdPasswordHere.setText(this.createPassword(this.captial.isSelected(), this.numbers.isSelected(), this.jcomp3.getSelectedIndex() + 1));
     }
 }
